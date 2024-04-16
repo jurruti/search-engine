@@ -6,6 +6,7 @@ const groupsTemplate = require('../distribution/all/groups');
 
 const ncdcGroup = {};
 const dlibGroup = {};
+const groupA = {};
 
 /*
    This hack is necessary since we can not
@@ -34,6 +35,10 @@ beforeAll((done) => {
   dlibGroup[id.getSID(n2)] = n2;
   dlibGroup[id.getSID(n3)] = n3;
 
+  groupA[id.getSID(n1)] = n1;
+  groupA[id.getSID(n2)] = n2;
+  groupA[id.getSID(n3)] = n3;
+
   const startNodes = (cb) => {
     distribution.local.status.spawn(n1, (e, v) => {
       distribution.local.status.spawn(n2, (e, v) => {
@@ -52,7 +57,10 @@ beforeAll((done) => {
       groupsTemplate(ncdcConfig).put(ncdcConfig, ncdcGroup, (e, v) => {
         const dlibConfig = {gid: 'dlib'};
         groupsTemplate(dlibConfig).put(dlibConfig, dlibGroup, (e, v) => {
-          done();
+          const groupCConfig = {gid: 'groupA'};
+          groupsTemplate(groupCConfig).put(groupCConfig, groupA, (e, v) => {
+            done();
+          });
         });
       });
     });
@@ -240,3 +248,87 @@ test('(25 pts) all.mr:dlib', (done) => {
     });
   });
 });
+
+test('crawler workflow', (done) => {
+  let m2 = async (name, url) => {
+    global.log('in map');
+    await new Promise((resolve, reject) => {
+      https.get(url, (res) => {
+        let page = '';
+        res.on('data', (d) => {
+          page += d;
+        });
+        res.on('end', () => {
+          global.distribution.local.store.put(page, url, () => {
+            global.log('stored page');
+            resolve();
+          });
+        });
+      }).on('error', (e) => {
+        global.log('error storing page');
+        reject(e);
+      });
+    });
+
+    global.log('promise resolved!');
+
+    let out = {};
+    out[name] = 'stored';
+    return out;
+  };
+
+  let r2 = (key, values) => {
+    let out = {};
+    out[key] = values;
+    return out;
+  };
+
+  const dataset = [
+    {'Google': 'https://www.google.com'},
+    {'LinkedIn': 'https://www.linkedin.com'},
+  ];
+
+  const expected = [{Google: ['stored']}, {LinkedIn: ['stored']}];
+
+  const doMapReduce = (cb) => {
+    distribution.groupA.store.get(null, (e, v) => {
+      try {
+        expect(v.length).toBe(dataset.length);
+      } catch (e) {
+        setTimeout(() => done(e), 2000);
+        return;
+      }
+
+      distribution.groupA.mr.exec({keys: v, map: m2, reduce: r2}, (e, v) => {
+        console.log('mr result', e, v);
+        if (e) {
+          done(e);
+          return;
+        }
+
+        try {
+          expect(v).toEqual(expect.arrayContaining(expected));
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
+    });
+  };
+
+  let cntr = 0;
+
+  // We send the dataset to the cluster
+  dataset.forEach((o) => {
+    let key = Object.keys(o)[0];
+    let value = o[key];
+    distribution.groupA.store.put(value, key, (e, v) => {
+      cntr++;
+      // Once we are done, run the map reduce
+      if (cntr === dataset.length) {
+        doMapReduce();
+      }
+    });
+  });
+});
+

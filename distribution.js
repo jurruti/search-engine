@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const util = require('./distribution/util/util.js');
+const fs = require('fs');
 const args = require('yargs').argv;
 
 // Default configuration
@@ -35,6 +36,15 @@ if (args.config) {
   global.nodeConfig.onStart = nodeConfig.onStart ?
         nodeConfig.onStart : global.nodeConfig.onStart;
 }
+
+global.https = require('https');
+const fileName = `${global.nodeConfig.ip}_${global.nodeConfig.port}.txt`;
+global.debugFileName = `${__dirname}/debug_logs/debug_log_${fileName}`;
+fs.writeFileSync(global.debugFileName, '');
+
+global.log = (message) => {
+  fs.appendFileSync(global.debugFileName, message + '\n');
+};
 
 const distribution = {
   util: require('./distribution/util/util.js'),

@@ -33,11 +33,14 @@ const mr = function(config) {
           let data = [];
           let count = keys.length;
           keys.forEach((key) => {
-            global.distribution[gid].store.get(key, (e, v) => {
+            global.distribution[gid].store.get(key, async (e, v) => {
               if (e) {
                 errors.push(e);
               } else {
-                let mapOut = mapF(key, v);
+                let mapOut;
+                let mapResult = mapF(key, v);
+                mapOut = await Promise.resolve(mapResult);
+
                 if (Array.isArray(mapOut)) {
                   data.push(...mapOut);
                 } else {
