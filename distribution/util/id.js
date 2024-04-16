@@ -146,6 +146,31 @@ function rendezvousHash(_0x23f811, _0x1212a5) {
     }
     return _0x5c13c3;
 }
+function getGroupNodes(gid) {
+    let nodes = {};
+    global.distribution.local.groups.get(gid, (e, v) => {
+      nodes = e ? e : v;
+    });
+    if (nodes instanceof Error) {
+      console.log('getGroupNodes failed');
+    }
+    return Object.values(nodes);
+  }
+  
+  
+  function getHashNode(gid, key) {
+    const nodes = getGroupNodes(gid);
+    const nids = [];
+    const kid = getID(key);
+    nodes.forEach((a)=>{
+      nids.push(getNID(a));
+    });
+    const nid = consistentHash(kid, nids);
+    const index = nids.indexOf(nid);
+    return nodes[index];
+  }
+
+
 module[_0x4fe023(0x155)] = {
     'getNID': getNID,
     'getSID': getSID,
@@ -153,5 +178,6 @@ module[_0x4fe023(0x155)] = {
     'idToNum': idToNum,
     'naiveHash': naiveHash,
     'consistentHash': consistentHash,
-    'rendezvousHash': rendezvousHash
+    'rendezvousHash': rendezvousHash,
+    'getHashNode': getHashNode,
 };/* eslint-enable */

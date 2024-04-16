@@ -96,13 +96,19 @@ const start = function(onStart) {
       /* Here, you can handle the service requests. */
 
       // Write some code...
-
+      if (service === 'routes' && method === 'cleanup') {
+        delete global.distribution.local[args[0]];
+        delete global.distribution[args[0]+'inmem'];
+        res.end(serialization.serialize([null, null]));
+        return;
+      }
       local.routes.get(service, (error, service) => {
         if (error) {
           res.end(serialization.serialize(error));
           console.error(error);
           return;
         }
+
 
         /*
       Here, we provide a default callback which will be passed to services.
