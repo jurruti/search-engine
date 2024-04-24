@@ -250,6 +250,49 @@ test('(25 pts) all.mr:dlib', (done) => {
 });
 
 test('crawler workflow', (done) => {
+  /* Implement a crawler that, given a list of page URLs
+    - downloads the content of the pages corresponding to these URLs
+    - stores them on the distributed storage. 
+    
+    - Most of the work here will be achieved by map — including possibly distributing these pages around the system.
+  */
+  let anna_m1 = (key, value) => {
+    // TODO: key=url
+
+    https.get(key, 
+      { rejectUnauthorized: false }, 
+      (res) => {
+      console.log('statusCode:', res.statusCode);
+      console.log('headers:', res.headers);
+
+      let body = [];
+      res.on('data', (chunk) => {
+        body.push(chunk);
+      });
+
+      res.on('end', () => {
+        body = Buffer.concat(body).toString();
+        let out = {};
+        out[key] = boy; // {1950: 0}
+        return out;
+      
+      });
+
+    }).on('error', (e) => {
+      console.error(e);
+    }); 
+
+
+  };
+
+  let anna_r1 = (key, values) => {
+    // key=url, values=page content
+    distribution.ncdc.store.put(values[0], key, (e, v) => {});
+  
+  };
+
+
+
   let m2 = async (name, url) => {
     global.log('in map');
     await new Promise((resolve, reject) => {
