@@ -5,6 +5,7 @@ const routes = require('./routes');
 const comm = require('./comm');
 
 
+
 function generateRandomString(length) {
   let result = '';
   let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXabcdefghijklmnopqrstuvwx0123456789';
@@ -40,7 +41,6 @@ const mr = function(config) {
                 let mapOut;
                 let mapResult = mapF(key, v);
                 mapOut = await Promise.resolve(mapResult);
-
                 if (Array.isArray(mapOut)) {
                   data.push(...mapOut);
                 } else {

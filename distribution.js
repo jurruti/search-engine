@@ -4,6 +4,8 @@ const util = require('./distribution/util/util.js');
 const fs = require('fs');
 const args = require('yargs').argv;
 
+global.indexer = require('./distribution/util/indexer.js');
+
 // Default configuration
 global.nodeConfig = global.nodeConfig || {
   ip: '127.0.0.1',

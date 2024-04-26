@@ -19,7 +19,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "html-to-text": "^9.0.5",
+    "natural": "^7.0.5",
     "node-fetch": "^2.7.0",
+    "stopword": "^3.0.1",
+    "stopwords": "^0.0.9",
     "sync-request": "^6.1.0",
     "yargs": "^17.7.2"
   }

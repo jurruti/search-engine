@@ -1,7 +1,6 @@
 const {convert} = require('html-to-text');
 const { removeStopwords } = require('stopword');
 var natural = require('natural');
-const https = require('https');
 
 // How many top results to keep
 const TOP = 10;
@@ -52,7 +51,7 @@ function invert(onegram, url) {
 } 
 
 
-const indexer = {
+module.exports = {
   /**
    * key is url
    * value is a page content
@@ -68,13 +67,12 @@ const indexer = {
    */
   reduce: (key, value) => {
     value.sort((a,b) => {b['tf'] - a['tf']});
-    for (let i = 0; i<TOP; i++) {
+    for (let i = 0; i<value.length; i++) {
       value[i]['rank'] = i+1;
     }
-    return value.slice(TOP);
+    global.distribution.local.store.put(global.distribution.util.serialize(value), key, ()=>{});
+    return 'success';
   }
-}
+};
 
-
-module.exports = indexer;
 
