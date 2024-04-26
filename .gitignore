@@ -2,3 +2,5 @@ node_modules
 submission.zip
 submission/javascript/src/main
 store
+.idea
+.env
