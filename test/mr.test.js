@@ -107,9 +107,6 @@ function sanityCheck(mapper, reducer, dataset, expected, done) {
 
 
 test('indexer workflow', (done) => {
-
-
-
   const dataset = [
     {'ex1.com': '<html><body>car spooon car spoon car spoon car spoon</body></html>'},
     {'ex2.com': '<html><body>car spooon car spoon car spoon car spoon</body></html>'},
@@ -126,13 +123,13 @@ test('indexer workflow', (done) => {
         return;
       }
 
-      distribution.groupA.mr.exec({keys: v, map: (key, value) => { 
+      distribution.groupA.mr.exec({keys: v, map: (key, value) => {
         // NOTE: perhaps this means coordinator is 7070 node (not in group)
-        return global.indexer['map'](key,value);
+        return global.indexer['map'](key, value);
       },
-        reduce: (key, value) => { 
-          return global.indexer['reduce'](key,value);
-        } }, (e, v) => {
+      reduce: (key, value) => {
+        return global.indexer['reduce'](key, value);
+      }}, (e, v) => {
         console.log('mr result', e, v);
         if (e) {
           done(e);

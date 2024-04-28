@@ -107,4 +107,7 @@ let callback = (repoInfoArray) => {
   // });
 };
 
-fetchRepos(1, 1, 1, callback);
+// fetchRepos(1, 1, 1, callback);
+
+module.exports = {fetchRepos, fetchReadMeFile};
+
