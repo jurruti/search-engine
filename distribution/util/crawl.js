@@ -60,6 +60,7 @@ function fetchRepos(startPage, repoN, pageN, callback) {
           html_url: repo.html_url,
           owner_login: repo.owner.login,
           name: repo.name,
+          // TODO: grab more info useful for metric/index: forks, issues, stars, watchers
         }));
 
         callback(repoInfoArray);

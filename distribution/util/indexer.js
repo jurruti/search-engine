@@ -36,6 +36,8 @@ function tf(somegram, tfMatrix, url) {
     tfMatrix[gram] = {};
     tfMatrix[gram]['tf'] = gramCounts[gram] / totalGrams;
     tfMatrix[gram]['url'] = url;
+    // { n-gram: [ {url, relative freq, metrics}, {} ]  }
+    // TODO: add metrics: forks, issues, stars, watchers OR a calculated trust score
   }
 }
 
@@ -55,21 +57,27 @@ module.exports = {
   /**
    * key is url
    * value is a page content
-   * output is object of form {term: {tf: , url, ...}}
+   * output is object of form { n-gram: [ {url, relative freq, metrics}, {} ]  }
    */
   map: (key, value) => {
-    const wordsArray = process(getText(value));
+    // TODO: each node fetch repo for its allocated set of URLs (httpsGet)
+    const wordsArray = process(getText(value)); 
     const tfMatrix = invert(wordsArray, key);
+    // TODO: shuffle redistribute based on new key = n-gram
     return tfMatrix;
   },
   /**
    * Key is term and value is an object {tf, url}
    */
   reduce: (key, value) => {
+    // Sort by term frequency
+    // TODO: filter based on tf?
+    // TODO: calculate (simple) trust score
     value.sort((a,b) => {b['tf'] - a['tf']});
     for (let i = 0; i<value.length; i++) {
       value[i]['rank'] = i+1;
     }
+    // TODO: store indexer output to group (distribution.group.store.put)
     global.distribution.local.store.put(global.distribution.util.serialize(value), key, ()=>{});
     return 'success';
   }

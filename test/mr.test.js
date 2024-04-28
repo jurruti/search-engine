@@ -127,6 +127,7 @@ test('indexer workflow', (done) => {
       }
 
       distribution.groupA.mr.exec({keys: v, map: (key, value) => { 
+        // NOTE: perhaps this means coordinator is 7070 node (not in group)
         return global.indexer['map'](key,value);
       },
         reduce: (key, value) => { 

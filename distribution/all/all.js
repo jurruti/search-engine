@@ -32,7 +32,7 @@ const mem = require('./mem');
 const store = require('./store');
 
 /* Map-Reduce Service */
-const mr = require('./mr');
+const mr = require('./mr'); // HERE
 
 
 module.exports = {
