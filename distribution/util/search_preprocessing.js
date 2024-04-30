@@ -5,24 +5,59 @@ const indexer = require('./indexer');
 
 
 module.exports = {
-  map: (key, value) => {
-    // key is the owner_name and value is the repo_name
-    const readme = crawl.fetchReadMeFile(key, value);
-    const wordsArray = indexer.process(readme);
-    const tfMatrix = indexer.invert(wordsArray, key);
-
+  map: async (key, value) => {
+    // key is the repo_name and value is the repoInfo
+    let {
+      repoUrl,
+      ownerLogin,
+      repoName,
+      forksCount,
+      openIssuesCount,
+      stargazersCount,
+      watchersCount,
+    } = value;
+    // TODO: Decide if we should use
+    //  repo description (fetchRepoDescription) or Readme (fetchReadMeFile)
+    const content = await crawl.fetchRepoDescription(ownerLogin, repoName);
+    const wordsArray = indexer.process(content);
+    // console.log('wordsArray: ', wordsArray);
+    return indexer.invert(
+        wordsArray,
+        repoUrl,
+        forksCount,
+        openIssuesCount,
+        stargazersCount,
+        watchersCount);
   },
-  reduce: (key, value) => {
-    const tfMatrix = {};
-    value.forEach((tfObj) => {
-      for (const term in tfObj) {
-        if (tfMatrix[term]) {
-          tfMatrix[term].tf += tfObj[term].tf;
-        } else {
-          tfMatrix[term] = tfObj[term];
-        }
-      }
+  reduce: async (key, value) => {
+    const trustScore = (value) => {
+      return Math.log(
+          5*value['forks'] + 5*value['issues'] +
+          value['stars'] + value['watchers'] + 1);
+    };
+    value.sort((a, b) => {
+      trustScore(b)*b['tf'] - trustScore(a)*a['tf'];
     });
-    return tfMatrix;
+    const topEntries = value.slice(0, 10);
+    for (let i = 0; i<topEntries.length; i++) {
+      topEntries[i]['rank'] = i+1;
+      topEntries[i]['trustScore'] = trustScore(topEntries[i]);
+    }
+    try {
+      await new Promise((resolve, reject) => {
+        global.distribution.all.store.put(topEntries, `query%%%${key}`, (e, v) => {
+          console.log('Stored indexer output');
+          if (e) {
+            reject(e);
+          } else {
+            resolve();
+          }
+        });
+      });
+      console.log('Success');
+      return 'success';
+    } catch (e) {
+      console.error('Error storing indexer output', e);
+    }
   },
 };

@@ -24,6 +24,7 @@ const n1 = {ip: '127.0.0.1', port: 7110};
 const n2 = {ip: '127.0.0.1', port: 7111};
 const n3 = {ip: '127.0.0.1', port: 7112};
 
+jest.setTimeout(20000);
 beforeAll((done) => {
   /* Stop the nodes if they are running */
 
@@ -101,63 +102,59 @@ function sanityCheck(mapper, reducer, dataset, expected, done) {
     done(e);
   }
 }
+test('searchPreprocessing workflow', async () => {
+  // Act as the coordinator
+  // TODO: Reduce timing out for repoN > 2, even if we get rid of all its logic
+  const dataset = await distribution.util.crawl.fetchRepos(1, 1);
 
-// ---all.mr---
-
-
-
-test('indexer workflow', (done) => {
-  const dataset = [
-    {'ex1.com': '<html><body>car spooon car spoon car spoon car spoon</body></html>'},
-    {'ex2.com': '<html><body>car spooon car spoon car spoon car spoon</body></html>'},
-  ];
-
-  const expected = [{Google: ['stored']}, {LinkedIn: ['stored']}];
-
-  const doMapReduce = (cb) => {
-    distribution.groupA.store.get(null, (e, v) => {
-      try {
-        expect(v.length).toBe(dataset.length);
-      } catch (e) {
-        setTimeout(() => done(e), 2000);
-        return;
-      }
-
-      distribution.groupA.mr.exec({keys: v, map: (key, value) => {
-        // NOTE: perhaps this means coordinator is 7070 node (not in group)
-        return global.indexer['map'](key, value);
-      },
-      reduce: (key, value) => {
-        return global.indexer['reduce'](key, value);
-      }}, (e, v) => {
-        console.log('mr result', e, v);
-        if (e) {
-          done(e);
+  const doMapReduce = async () => {
+    return new Promise((resolve, reject) => {
+      distribution.groupA.store.get(null, async (e, v) => {
+        try {
+          expect(v.length).toBe(dataset.length);
+        } catch (error) {
+          reject(error);
           return;
         }
 
-        try {
-          expect(v.length>0).toEqual(true);
-          done();
-        } catch (e) {
-          done(e);
-        }
+        distribution.groupA.mr.exec({
+          keys: v,
+          map: async (key, value) =>
+            await distribution.util.searchPreprocessing['map'](key, value),
+          reduce: async (key, value) =>
+            await distribution.util.searchPreprocessing['reduce'](key, value),
+        }, (error, value) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+          try {
+            expect(value.length>0).toEqual(true);
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        });
       });
     });
   };
 
   let cntr = 0;
-
-  // We send the dataset to the cluster
-  dataset.forEach((o) => {
+  await Promise.all(dataset.map(async (o) => {
     let key = Object.keys(o)[0];
     let value = o[key];
-    distribution.groupA.store.put(value, key, (e, v) => {
-      cntr++;
-      // Once we are done, run the map reduce
-      if (cntr === dataset.length) {
-        doMapReduce();
-      }
+    await new Promise((resolve, reject) => {
+      distribution.groupA.store.put(value, key, (error, value) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        cntr++;
+        // Once we are done, run the map reduce
+        if (cntr === dataset.length) {
+          resolve(doMapReduce());
+        }
+      });
     });
-  });
+  }));
 });

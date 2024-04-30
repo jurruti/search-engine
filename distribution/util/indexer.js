@@ -5,7 +5,6 @@ var natural = require('natural');
 // How many top results to keep
 const TOP = 10;
 
-
 function getText(pageContent) {
     const text = convert(pageContent, {wordwrap: false});
     return text;
@@ -25,7 +24,7 @@ function process(textContent) {
 /**
  * Generates TF matrix from terms array
  */
-function tf(somegram, tfMatrix, url) {
+function tf(somegram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount) {
   const gramCounts = somegram.reduce((counts, word) => {
     const gram = typeof word === 'string' ? word : word.join(' ');
     counts[gram] = (counts[gram] || 0) + 1;
@@ -33,27 +32,29 @@ function tf(somegram, tfMatrix, url) {
   }, {});
   const totalGrams = somegram.length;
   for (const gram in gramCounts) {
-    // TODO: add metrics: forks, issues, stars,
-    //  watchers OR a calculated trust score
     if (gramCounts.hasOwnProperty(gram)) {
       tfMatrix[gram] = tfMatrix[gram] || {};
       tfMatrix[gram]['tf'] = gramCounts[gram] / totalGrams;
       tfMatrix[gram]['url'] = url;
+      tfMatrix[gram]['forks'] = forksCount;
+      tfMatrix[gram]['issues'] = openIssuesCount;
+      tfMatrix[gram]['stars'] = stargazersCount;
+      tfMatrix[gram]['watchers'] = watchersCount;
     }
   }
 }
 
-
-function invert(onegram, url) {
+function invert(onegram, url, forksCount, openIssuesCount, stargazersCount, watchersCount) {
   const NGrams = natural.NGrams;
   const twogram = NGrams.bigrams(onegram);
   const trigram = NGrams.trigrams(onegram);
   const tfMatrix = {};
-  tf(onegram, tfMatrix, url);
-  tf(twogram, tfMatrix, url);
-  tf(trigram, tfMatrix, url);
+  tf(onegram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount);
+  tf(twogram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount);
+  tf(trigram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount);
   return tfMatrix;
 }
+
 
 module.exports = {
   process,

@@ -137,7 +137,7 @@ const mr = function(config) {
           }
           callback(null, global.distribution[mrName+'inmem']['reduce']);
         },
-        doReduce: (mrName, reduceF, cb) => {
+        doReduce: async (mrName, reduceF, cb) => {
           const callback = cb || function() {};
           const msn = mrName+'inmem';
           if (msn in global.distribution &&
@@ -150,6 +150,7 @@ const mr = function(config) {
                 Object.keys(global.distribution[msn]['reduce'])) {
                 let result = reduceF(key,
                     global.distribution[msn]['reduce'][key]);
+                result = await Promise.resolve(result);
                 results.push(result);
               }
               callback(null, results);
@@ -230,7 +231,7 @@ const mr = function(config) {
             method: 'shuffleSend',
           };
           local.comm.send(args, remote, (e, v) => {
-            console.log('SHUFFLE SEND:'+JSON.stringify(v));
+            // console.log('SHUFFLE SEND:'+JSON.stringify(v));
             count -= 1;
             return;
           });
