@@ -24,7 +24,6 @@ const n1 = {ip: '127.0.0.1', port: 7110};
 const n2 = {ip: '127.0.0.1', port: 7111};
 const n3 = {ip: '127.0.0.1', port: 7112};
 
-jest.setTimeout(20000);
 beforeAll((done) => {
   /* Stop the nodes if they are running */
 
@@ -104,8 +103,8 @@ function sanityCheck(mapper, reducer, dataset, expected, done) {
 }
 test('searchPreprocessing workflow', async () => {
   // Act as the coordinator
-  // TODO: Reduce timing out for repoN > 2, even if we get rid of all its logic
-  const dataset = await distribution.util.crawl.fetchRepos(1, 1);
+  const dataset = await distribution.util.crawl.fetchRepos(1, 10);
+  console.log('Dataset: ', dataset);
 
   const doMapReduce = async () => {
     return new Promise((resolve, reject) => {
@@ -140,21 +139,17 @@ test('searchPreprocessing workflow', async () => {
   };
 
   let cntr = 0;
-  await Promise.all(dataset.map(async (o) => {
-    let key = Object.keys(o)[0];
-    let value = o[key];
-    await new Promise((resolve, reject) => {
-      distribution.groupA.store.put(value, key, (error, value) => {
-        if (error) {
-          reject(error);
-          return;
-        }
+
+  await new Promise((resolve, reject) => {
+    dataset.forEach((o) => {
+      let key = Object.keys(o)[0];
+      let value = o[key];
+      distribution.groupA.store.put(value, key, (e, v) => {
         cntr++;
-        // Once we are done, run the map reduce
         if (cntr === dataset.length) {
           resolve(doMapReduce());
         }
       });
     });
-  }));
+  });
 });
