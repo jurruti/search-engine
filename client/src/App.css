@@ -1,0 +1,110 @@
+.App {
+  width: 100vw;
+  height: 100vh;
+  background-color: #CBC3E3;
+  font-family: 'Kai';
+  display: flex;
+  justify-content: center;
+  overflow: scroll;
+
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 20px;
+  width: 90%;
+  margin-bottom: 20px;
+  overflow: scroll;
+}
+
+.repositories-container{
+  width: 80%;
+  display: flex;
+  flex-direction: column;
+}
+
+.column-headers {
+  width: 95%;
+  display: flex;
+  gap: 10px;
+}
+
+.repository-table{
+  width: 100%;
+}
+
+#repository-info{
+  width: 65%;
+}
+
+.searchbar-container {
+  width: 100%;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 50px;
+  gap: 20px;
+
+}
+
+.MuiInputBase-input.MuiOutlinedInput-input.css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input{
+  font-family: 'Kai' !important;
+  font-size: 1.1em;
+}
+
+.css-14lo706{
+  color: black;
+}
+
+
+table{
+  text-align: left;
+  border-collapse: collapse; 
+}
+
+tr {
+  border-bottom: 1px solid black;
+}
+
+.table-header-row{
+  font-size: 1.3em;
+  margin-bottom: 5px !important;
+  font-weight: unset;
+}
+
+.repo-row{
+  background-color: rgb(170, 195, 237);
+}
+
+
+.repo-row:hover{
+  cursor: pointer;
+  background-color: rgb(153, 173, 207);
+}
+
+#repo-score{
+  font-size: 1.4em;
+}
+
+#sort-by-select{
+  font-family: 'Kai' !important;
+}
+
+
+.MuiButtonBase-root.MuiMenuItem-root.MuiMenuItem-gutters.MuiMenuItem-root.MuiMenuItem-gutters.css-kk1bwy-MuiButtonBase-root-MuiMenuItem-root{
+  font-family: 'Kai' !important;
+}
+
+.sort-order-container{
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+.sort-order-container:hover{
+  transform: scale(1.1);
+}
