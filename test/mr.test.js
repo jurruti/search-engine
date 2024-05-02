@@ -24,7 +24,7 @@ const n1 = {ip: '127.0.0.1', port: 7110};
 const n2 = {ip: '127.0.0.1', port: 7111};
 const n3 = {ip: '127.0.0.1', port: 7112};
 
-jest.setTimeout(30000);
+jest.setTimeout(300000);
 beforeAll((done) => {
   /* Stop the nodes if they are running */
 
@@ -105,6 +105,7 @@ function sanityCheck(mapper, reducer, dataset, expected, done) {
 test('searchPreprocessing workflow', async () => {
   // Act as the coordinator
   const dataset = await distribution.util.crawl.fetchRepos(1, 100);
+  console.log('Dataset: ', dataset);
 
   const doMapReduce = async () => {
     return new Promise((resolve, reject) => {

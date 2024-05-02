@@ -5,22 +5,17 @@ const indexer = require('./indexer');
 
 
 module.exports = {
-  map: async (key, value) => {
-    // key is the repo_name and value is the repoInfo
+  map: async (repoName, ownerLogin) => {
+    // key is the repoName and value is ownerLogin
     let {
       repoUrl,
-      ownerLogin,
-      repoName,
       forksCount,
       openIssuesCount,
       stargazersCount,
       watchersCount,
-    } = value;
-    // TODO: Decide if we should use
-    //  repo description (fetchRepoDescription) or Readme (fetchReadMeFile)
-    const content = await crawl.fetchRepoDescription(ownerLogin, repoName);
+      content,
+    } = await crawl.fetchRepoData(ownerLogin, repoName);
     const wordsArray = indexer.process(content);
-    // console.log('wordsArray: ', wordsArray);
     return indexer.invert(
         wordsArray,
         repoUrl,

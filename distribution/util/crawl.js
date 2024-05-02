@@ -1,30 +1,6 @@
 require('dotenv').config();
 const fetch = require('node-fetch');
 
-/**
- * Performs a GET request to the specified URL with the provided headers.
- *
- * @param {string} url - The URL to send the GET request to.
- * @param {Object} headers - HTTP headers to include in the request.
- * @return {Promise<Object>} - A promise that resolves with the parsed JSON response.
- */
-function httpsGet(url, headers) {
-  return new Promise((resolve, reject) => {
-    const options = {headers};
-    https.get(url, options, (resp) => {
-      let data = '';
-      resp.on('data', (chunk) => {
-        data += chunk;
-      });
-      resp.on('end', () => {
-        resolve(JSON.parse(data));
-      });
-    }).on('error', (err) => {
-      reject(err);
-    });
-  });
-}
-
 const token = process.env.GITHUB_TOKEN;
 
 if (!token) {
@@ -52,16 +28,7 @@ async function fetchRepos(page, repoN) {
     }
     const repos = await response.json();
     let mapper = (repo) => {
-      let repoInfo = {
-        repoUrl: repo.html_url,
-        ownerLogin: repo.owner.login,
-        repoName: repo.name,
-        forksCount: repo.forks_count,
-        openIssuesCount: repo.open_issues_count,
-        stargazersCount: repo.stargazers_count,
-        watchersCount: repo.watchers_count,
-      };
-      return {[repo.name]: repoInfo};
+      return {[repo.name]: repo.owner.login};
     };
     return repos.items.map(mapper);
   } catch (error) {
@@ -70,30 +37,7 @@ async function fetchRepos(page, repoN) {
   }
 }
 
-
-/**
- * Fetches the README file for a given GitHub repository.
- *
- * @param {string} owner - GitHub username of the repository owner.
- * @param {string} repo - Repository name.
- * @return {Promise<string>} - A promise that resolves with the README file content.
- */
-async function fetchReadMeFile(owner, repo) {
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/README.md`;
-  try {
-    const response = await httpsGet(
-        url, {'User-Agent': 'Node.js', 'Authorization': `token ${token}`});
-    if (!response.content) {
-      return '';
-    }
-    return Buffer.from(response.content, 'base64').toString('utf8');
-  } catch (error) {
-    console.error('Failed to fetch README:', error);
-    throw error; // Optional: re-throw to allow the caller to handle the error
-  }
-}
-
-async function fetchRepoDescription(owner, repo) {
+async function fetchRepoData(owner, repo) {
   const url = `https://api.github.com/repos/${owner}/${repo}`;
   try {
     const response = await fetch(
@@ -103,15 +47,21 @@ async function fetchRepoDescription(owner, repo) {
       });
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(`GitHub API returned ${response.status}: ${data.message}`);
+      throw new Error(`GitHub API returned ${response.status} for owner: ${owner} and repo: ${repo}`);
     }
-    return data.description; // This contains the "About" section of the repository
+    return {
+      repoUrl: data.html_url,
+      forksCount: data.forks_count,
+      openIssuesCount: data.open_issues_count,
+      stargazersCount: data.stargazers_count,
+      watchersCount: data.watchers_count,
+      content: data.description,
+    };
   } catch (error) {
-    console.error('Failed to fetch repository description:', error);
-    throw error; // Optional: re-throw to allow the caller to handle the error
+    console.error('Failed to fetch repository metrics:', error);
+    throw error;
   }
 }
 
-
-module.exports = {fetchRepos, fetchReadMeFile, fetchRepoDescription};
+module.exports = {fetchRepos, fetchRepoData};
 
