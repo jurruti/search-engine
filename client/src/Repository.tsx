@@ -22,7 +22,7 @@ export const Repository = (props: RepositoryProps) => {
 
   return (
     <div className='repository-container'>
-        <div id='repository-name'>{repo.name}</div>
+        <div id='repository-name'>{repo.name} — <span style={{fontSize: '1.1em', fontWeight: 'lighter'}}>{repo.owner}</span></div>
         {repo.contributors && repo.contributors.length > 0 && 
           <div id='repository-contributors'>
             {repo.contributors?.join(', ')}
