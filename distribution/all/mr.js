@@ -231,7 +231,7 @@ const mr = function(config) {
             method: 'shuffleSend',
           };
           local.comm.send(args, remote, (e, v) => {
-            console.log('SHUFFLE SEND:' + JSON.stringify(v));
+            // console.log('SHUFFLE SEND:' + JSON.stringify(v));
             count -= 1;
             return;
           });

@@ -12,6 +12,9 @@ function getText(pageContent) {
 
 function process(textContent) {
   // split into words, convert nonletter sequence to spaces
+  if (!textContent) {
+    textContent = '';
+  }
   let words = textContent.split(/[^A-Za-z]+/).filter((word) => word);
   // lowercase
   words = words.map((word) => word.toLowerCase());
