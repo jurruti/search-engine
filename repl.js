@@ -12,6 +12,7 @@ const id = distribution.util.id;
 const n1 = {ip: '127.0.0.1', port: 8081};
 const n2 = {ip: '127.0.0.1', port: 8082}
 const n3 = {ip: '127.0.0.1', port: 8083};
+const n4 = {ip: '127.0.0.1', port: 8080}
 const workerGroup = {};
 workerGroup[id.getSID(n1)] = n1;
 workerGroup[id.getSID(n2)] = n2;
@@ -44,7 +45,6 @@ function eval(cmd) {
     return id;
   }
   if (cmd === 'group') {
-  
     groupsTemplate(workerConfig).put(workerConfig, workerGroup, (e, v) => {
       console.log(JSON.stringify(e));
       console.log(JSON.stringify(v));
@@ -57,8 +57,30 @@ function eval(cmd) {
       console.log(JSON.stringify(e));
       console.log(JSON.stringify(v));
     });
+    return cmd
   }
-  
+  if (cmd.slice(0,5) === 'store') {
+    distribution['worker'].store.put('data1', cmd[5], (e,v) => {
+      console.log(JSON.stringify(e));
+      console.log(JSON.stringify(v));
+    });
+    return cmd
+  }
+  if (cmd.slice(0,3) === 'get') {
+    distribution['worker'].store.get(cmd[3], (e,v) => {
+      console.log(JSON.stringify(e));
+      console.log(JSON.stringify(v));
+    });
+    return cmd
+  }
+  if (cmd.slice(0,5) === 'query') {
+    const args = [cmd[5]];
+    distribution.local.comm.send(args, remote, (e,v) => {
+      console.log(JSON.stringify(e));
+      console.log(JSON.stringify(v));
+    })
+    return cmd
+  }
   return 'no command'
 }
 
