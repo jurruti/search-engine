@@ -22,7 +22,9 @@ module.exports = {
         forksCount,
         openIssuesCount,
         stargazersCount,
-        watchersCount);
+        watchersCount,
+        ownerLogin,
+    );
   },
   reduce: async (key, value) => {
     const trustScore = (value) => {

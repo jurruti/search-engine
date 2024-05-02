@@ -2,14 +2,6 @@ const {convert} = require('html-to-text');
 const { removeStopwords } = require('stopword');
 var natural = require('natural');
 
-// How many top results to keep
-const TOP = 10;
-
-function getText(pageContent) {
-    const text = convert(pageContent, {wordwrap: false});
-    return text;
-}
-
 function process(textContent) {
   // split into words, convert nonletter sequence to spaces
   if (!textContent) {
@@ -27,7 +19,7 @@ function process(textContent) {
 /**
  * Generates TF matrix from terms array
  */
-function tf(somegram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount) {
+function tf(somegram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount, ownerLogin) {
   const gramCounts = somegram.reduce((counts, word) => {
     const gram = typeof word === 'string' ? word : word.join(' ');
     counts[gram] = (counts[gram] || 0) + 1;
@@ -43,18 +35,19 @@ function tf(somegram, tfMatrix, url, forksCount, openIssuesCount, stargazersCoun
       tfMatrix[gram]['issues'] = openIssuesCount;
       tfMatrix[gram]['stars'] = stargazersCount;
       tfMatrix[gram]['watchers'] = watchersCount;
+      tfMatrix[gram]['owner'] = ownerLogin;
     }
   }
 }
 
-function invert(onegram, url, forksCount, openIssuesCount, stargazersCount, watchersCount) {
+function invert(onegram, url, forksCount, openIssuesCount, stargazersCount, watchersCount, ownerLogin) {
   const NGrams = natural.NGrams;
   const twogram = NGrams.bigrams(onegram);
   const trigram = NGrams.trigrams(onegram);
   const tfMatrix = {};
-  tf(onegram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount);
-  tf(twogram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount);
-  tf(trigram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount);
+  tf(onegram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount, ownerLogin);
+  tf(twogram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount, ownerLogin);
+  tf(trigram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount, ownerLogin);
   return tfMatrix;
 }
 
@@ -63,35 +56,5 @@ module.exports = {
   process,
   invert,
 };
-
-// module.exports = {
-// /**
-//  * key is url
-//  * value is a page content
-//  * output is object of form { n-gram: [ {url, relative freq, metrics}, {} ]  }
-//  */
-// map: (key, value) => {
-//   // TODO: each node fetch repo for its allocated set of URLs (httpsGet)
-//   const wordsArray = process(getText(value));
-//   const tfMatrix = invert(wordsArray, key);
-//   // TODO: shuffle redistribute based on new key = n-gram
-//   return tfMatrix;
-// },
-//   /**
-//    * Key is term and value is an object {tf, url}
-//    */
-//   reduce: (key, value) => {
-//   // Sort by term frequency
-//   // TODO: filter based on tf?
-//   // TODO: calculate (simple) trust score
-//   value.sort((a,b) => {b['tf'] - a['tf']});
-//   for (let i = 0; i<value.length; i++) {
-//     value[i]['rank'] = i+1;
-//   }
-//   // TODO: store indexer output to group (distribution.group.store.put)
-//   global.distribution.local.store.put(global.distribution.util.serialize(value), key, ()=>{});
-//   return 'success';
-// }
-// };
 
 
