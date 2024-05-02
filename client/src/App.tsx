@@ -16,7 +16,7 @@ function App() {
 
   const [sortOrder, setSortOrder] = useState<string>('desc');
 
-  const [sortBy, setSortBy] = useState<SortBy>('Rel. Freq.');
+  const [sortBy, setSortBy] = useState<SortBy>('Trust Score');
 
   const [foundRepos, setFoundRepos] = useState<Repo[]>([]);
   const [query, setQuery] = useState<string>('');

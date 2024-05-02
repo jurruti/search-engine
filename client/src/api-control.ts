@@ -5,11 +5,11 @@ const PORT = 7000;
 const mockRepos: Repo[] = [
   {
     name: 'stable-diffusion-web-ui',
-    url: 'www.github.com/sample',
-    trustScore: 0.981,
+    url: 'https://github.com/apple/ml-stable-diffusion',
+    trustScore: parseFloat(Math.log(((146*5) + (24900*5) + 1300000 + 1100 + 1)).toFixed(2)),
     relFreq: 0.021, 
     forksCount: 24900,
-    openIssuesCount: 2,
+    openIssuesCount: 146,
     stargazersCount: 130000,
     watchersCount: 1100,
     contributors: ['AUTOMATIC111', 'w-e-w', 'dfaker'],
@@ -17,11 +17,11 @@ const mockRepos: Repo[] = [
   },
   {
     name: 'stable-diffusion',
-    url: 'www.github.com/sample',
-    trustScore: 0.951,
+    url: 'https://github.com/CompVis/stable-diffusion',
+    trustScore: parseFloat(Math.log(((505*5) + (9800*5) + 65400 + 552 + 1)).toFixed(2)),
     relFreq: 0.033, 
     forksCount: 9800,
-    openIssuesCount: 4,
+    openIssuesCount: 505,
     stargazersCount: 65400,
     watchersCount: 552,
     contributors: ['rromb', 'pesser', 'ablatmann'],
@@ -30,10 +30,10 @@ const mockRepos: Repo[] = [
   {
     name: 'generative-models',
     url: 'www.github.com/sample',
-    trustScore: 0.922,
+    trustScore: parseFloat(Math.log(((215*5) + (2400*5) + 22300 + 234 + 1)).toFixed(2)),
     relFreq: 0.031, 
     forksCount: 2400,
-    openIssuesCount: 8,
+    openIssuesCount: 215,
     stargazersCount: 22300,
     watchersCount: 234,
     contributors: ['timudk', 'akx', 'benjaminaubin'],
@@ -41,64 +41,17 @@ const mockRepos: Repo[] = [
   },
   {
     name: 'ml-stable-diffusion',
-    url: 'www.github.com/sample',
-    trustScore: 0.840,
+    url: 'https://github.com/apple/ml-stable-diffusion',
+    trustScore: parseFloat(Math.log(((146*5) + (861*5) + 16100 + 134 + 1)).toFixed(2)),
     relFreq: 0.106, 
-    forksCount: 860,
-    openIssuesCount: 12,
+    forksCount: 861,
+    openIssuesCount: 146,
     stargazersCount: 16100,
     watchersCount: 134,
     contributors: ['atiorh', 'pcuenca', 'vzsg'],
     owner: 'apple'
   },
-  {
-    name: 'stable-diffusion-web-ui',
-    url: 'www.github.com/sample',
-    trustScore: 0.981,
-    relFreq: 0.021, 
-    forksCount: 24900,
-    openIssuesCount: 2,
-    stargazersCount: 130000,
-    watchersCount: 1100,
-    contributors: ['AUTOMATIC111', 'w-e-w', 'dfaker'],
-    owner: 'AUTOMATIC111'
-  },
-  {
-    name: 'stable-diffusion',
-    url: 'www.github.com/sample',
-    trustScore: 0.951,
-    relFreq: 0.033, 
-    forksCount: 9800,
-    openIssuesCount: 4,
-    stargazersCount: 65400,
-    watchersCount: 552,
-    contributors: ['rromb', 'pesser', 'ablatmann'],
-    owner: 'CompVis'
-  },
-  {
-    name: 'generative-models',
-    url: 'www.github.com/sample',
-    trustScore: 0.922,
-    relFreq: 0.031, 
-    forksCount: 2400,
-    openIssuesCount: 8,
-    stargazersCount: 22300,
-    watchersCount: 234,
-    contributors: ['timudk', 'akx', 'benjaminaubin'],
-    owner: 'StabilityAI'
-  },
-  {
-    name: 'ml-stable-diffusion',
-    url: 'www.github.com/sample',
-    trustScore: 0.840,
-    relFreq: 0.106, 
-    forksCount: 860,
-    openIssuesCount: 12,
-    stargazersCount: 16100,
-    watchersCount: 134,
-    contributors: ['atiorh', 'pcuenca', 'vzsg'],
-    owner: 'apple'
-  },
+
 ]
 
 
