@@ -24,7 +24,7 @@ const n1 = {ip: '127.0.0.1', port: 7110};
 const n2 = {ip: '127.0.0.1', port: 7111};
 const n3 = {ip: '127.0.0.1', port: 7112};
 
-jest.setTimeout(300000);
+jest.setTimeout(30000000);
 beforeAll((done) => {
   /* Stop the nodes if they are running */
 
@@ -102,13 +102,30 @@ function sanityCheck(mapper, reducer, dataset, expected, done) {
     done(e);
   }
 }
-test('searchPreprocessing workflow', async () => {
-  // Act as the coordinator
-  const dataset = await distribution.util.crawl.fetchRepos(1, 20);
+
+test('large searchPreprocessing workflow', async () => {
+  const totalRepos = 100;
+
+  async function fetchAllRepos() {
+    let page = 1;
+    let dataset = [];
+    while (dataset.length < totalRepos) {
+      const newRepos = await distribution.util.crawl.fetchRepos(page, Math.min(100, totalRepos - dataset.length));
+      dataset = dataset.concat(newRepos);
+      if (newRepos.length === 0) {
+        break;
+      }
+      page++;
+    }
+    return dataset;
+  }
+
+  let dataset = await fetchAllRepos();
 
   const doMapReduce = async () => {
     return new Promise((resolve, reject) => {
       distribution.groupA.store.get(null, async (e, v) => {
+        console.log('key number: ', v.length);
         distribution.groupA.mr.exec({
           keys: v,
           map: async (key, value) =>
@@ -146,3 +163,4 @@ test('searchPreprocessing workflow', async () => {
     });
   });
 });
+
