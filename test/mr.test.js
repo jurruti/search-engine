@@ -1,4 +1,4 @@
-global.nodeConfig = {ip: '172.31.26.178', port: 8080};
+global.nodeConfig = {ip: '127.0.0.1', port: 7070};
 const distribution = require('../distribution');
 const id = distribution.util.id;
 
@@ -20,9 +20,9 @@ let localServer = null;
     The local node will be the orchestrator.
 */
 
-const n1 = {ip: '172.31.19.210', port: 8080};
-const n2 = {ip: '172.31.25.251', port: 8080};
-const n3 = {ip: '172.31.24.240', port: 8080};
+const n1 = {ip: '127.0.0.1', port: 7110};
+const n2 = {ip: '127.0.0.1', port: 7111};
+const n3 = {ip: '127.0.0.1', port: 7112};
 
 jest.setTimeout(300000);
 beforeAll((done) => {
@@ -105,7 +105,6 @@ function sanityCheck(mapper, reducer, dataset, expected, done) {
 test('searchPreprocessing workflow', async () => {
   // Act as the coordinator
   const dataset = await distribution.util.crawl.fetchRepos(1, 100);
-  console.log('Dataset: ', dataset);
 
   const doMapReduce = async () => {
     return new Promise((resolve, reject) => {
