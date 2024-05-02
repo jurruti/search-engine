@@ -14,7 +14,6 @@ global.nodeConfig = {ip: '172.31.26.178', port: 8080, onStart: () => {
     })
 }};
 
-
 const distribution = require('./distribution');
 const path = require('path');
 const fs = require('fs');
