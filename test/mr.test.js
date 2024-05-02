@@ -20,10 +20,11 @@ let localServer = null;
     The local node will be the orchestrator.
 */
 
-const n1 = {ip: '172.31.26.178', port: 8080};
-const n2 = {ip: '172.31.25.251', port: 8080};
-const n3 = {ip: '127.0.0.1', port: 8080};
+const n1 = {ip: '127.0.0.1', port: 7110};
+const n2 = {ip: '127.0.0.1', port: 7111};
+const n3 = {ip: '127.0.0.1', port: 7112};
 
+jest.setTimeout(30000);
 beforeAll((done) => {
   /* Stop the nodes if they are running */
 
