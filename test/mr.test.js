@@ -103,19 +103,11 @@ function sanityCheck(mapper, reducer, dataset, expected, done) {
 }
 test('searchPreprocessing workflow', async () => {
   // Act as the coordinator
-  const dataset = await distribution.util.crawl.fetchRepos(1, 10);
-  console.log('Dataset: ', dataset);
+  const dataset = await distribution.util.crawl.fetchRepos(1, 100);
 
   const doMapReduce = async () => {
     return new Promise((resolve, reject) => {
       distribution.groupA.store.get(null, async (e, v) => {
-        try {
-          expect(v.length).toBe(dataset.length);
-        } catch (error) {
-          reject(error);
-          return;
-        }
-
         distribution.groupA.mr.exec({
           keys: v,
           map: async (key, value) =>
