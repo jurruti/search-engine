@@ -20,9 +20,9 @@ let localServer = null;
     The local node will be the orchestrator.
 */
 
-const n1 = {ip: '172.31.26.178', port: 8080};
-const n2 = {ip: '172.31.25.251', port: 8080};
-const n3 = {ip: '127.0.0.1', port: 8080};
+const n1 = {ip: '127.0.0.1', port: 7110};
+const n2 = {ip: '127.0.0.1', port: 7111};
+const n3 = {ip: '127.0.0.1', port: 7112};
 
 beforeAll((done) => {
   /* Stop the nodes if they are running */
@@ -101,47 +101,88 @@ function sanityCheck(mapper, reducer, dataset, expected, done) {
     done(e);
   }
 }
-test('searchPreprocessing workflow', async () => {
-  // Act as the coordinator
-  const dataset = await distribution.util.crawl.fetchRepos(1, 100);
 
-  const doMapReduce = async () => {
-    return new Promise((resolve, reject) => {
-      distribution.groupA.store.get(null, async (e, v) => {
-        distribution.groupA.mr.exec({
-          keys: v,
-          map: async (key, value) =>
-            await distribution.util.searchPreprocessing['map'](key, value),
-          reduce: async (key, value) =>
-            await distribution.util.searchPreprocessing['reduce'](key, value),
-        }, (error, value) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-          try {
-            expect(value.length>0).toEqual(true);
-            resolve();
-          } catch (error) {
-            reject(error);
-          }
+
+test('crawler workflow', (done) => {
+  let m2 = async (name, url) => {
+    global.log('in map');
+    await new Promise((resolve, reject) => {
+      https.get(url, (res) => {
+        let page = '';
+        res.on('data', (d) => {
+          page += d;
         });
+        res.on('end', () => {
+          global.distribution.local.store.put(page, url, () => {
+            global.log('stored page');
+            resolve();
+          });
+        });
+      }).on('error', (e) => {
+        global.log('error storing page');
+        reject(e);
+      });
+    });
+
+    global.log('promise resolved!');
+
+    let out = {};
+    out[name] = 'stored';
+    return out;
+  };
+
+  let r2 = (key, values) => {
+    let out = {};
+    out[key] = values;
+    return out;
+  };
+
+  const dataset = [
+    {'Google': 'https://www.google.com'},
+    {'LinkedIn': 'https://www.linkedin.com'},
+  ];
+
+  const expected = [{Google: ['stored']}, {LinkedIn: ['stored']}];
+
+  const doMapReduce = (cb) => {
+    distribution.groupA.store.get(null, (e, v) => {
+      try {
+        expect(v.length).toBe(dataset.length);
+      } catch (e) {
+        setTimeout(() => done(e), 2000);
+        return;
+      }
+
+      distribution.groupA.mr.exec({keys: v, map: m2, reduce: r2}, (e, v) => {
+        console.log('mr result', e, v);
+        if (e) {
+          done(e);
+          return;
+        }
+
+        try {
+          expect(v).toEqual(expect.arrayContaining(expected));
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
   };
 
   let cntr = 0;
 
-  await new Promise((resolve, reject) => {
-    dataset.forEach((o) => {
-      let key = Object.keys(o)[0];
-      let value = o[key];
-      distribution.groupA.store.put(value, key, (e, v) => {
-        cntr++;
-        if (cntr === dataset.length) {
-          resolve(doMapReduce());
-        }
-      });
+  // We send the dataset to the cluster
+  dataset.forEach((o) => {
+    let key = Object.keys(o)[0];
+    let value = o[key];
+    distribution.groupA.store.put(value, key, (e, v) => {
+      cntr++;
+      // Once we are done, run the map reduce
+      if (cntr === dataset.length) {
+        doMapReduce();
+      }
     });
   });
 });
+
