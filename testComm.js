@@ -5,9 +5,6 @@
 // group that runs  the workflow
 const groupsTemplate = require('./distribution/all/groups');
 const distribution = require('./distribution');
-const path = require('path');
-const fs = require('fs');
-const {convert} = require('html-to-text');
 const id = distribution.util.id;
 
 //////////////////////////////////////////////////////////////////
@@ -36,18 +33,20 @@ function isEmptyObject(obj) {
   return Object.keys(obj).length === 0 && obj.constructor === Object;
 }
 const setGroup = () => {
-  groupsTemplate(workerConfig).put(workerConfig, workerGroup, (e, v) => {
+  groupsTemplate(workerConfig).put(workerConfig, workerGroup, async (e, v) => {
     if (!e || isEmptyObject(e)) {
-      console.log('ERROR PUTTING THE GORUP');
-      cleanup();
+      cleanup(new Error('ERROR PUTTING THE GORUP'));
       return;
     } else {
-      workflow();
+      await workflow();
+      cleanup();
+      return;
     }
   });
 }
 
 async function workflow() {
+  const dataset = await distribution.util.crawl.fetchRepos(1, 100);
   return await new Promise((resolve, reject) => {
     dataset.forEach((o) => {
       let key = Object.keys(o)[0];
@@ -64,8 +63,8 @@ async function workflow() {
 
 const doMapReduce = async () => {
   return new Promise((resolve, reject) => {
-    distribution.workerGroup.store.get(null, async (e, v) => {
-      distribution.workerGroup.mr.exec({
+    distribution.groupA.store.get(null, async (e, v) => {
+      distribution.groupA.mr.exec({
         keys: v,
         map: async (key, value) =>
           await distribution.util.searchPreprocessing['map'](key, value),
@@ -73,23 +72,19 @@ const doMapReduce = async () => {
           await distribution.util.searchPreprocessing['reduce'](key, value),
       }, (error, value) => {
         if (error) {
-          reject(cleanup(e));
+          reject(error);
           return;
-        } else {
-          console.log('FINAL: '+v.length);
+        }
+        try {
+          expect(value.length>0).toEqual(true);
+          resolve();
+        } catch (error) {
+          reject(error);
         }
       });
-    })
+    });
   });
 };
-
-//////////////////////////////////////////////////////////////////
-/**
- * EXECUTION SECTION
- */
-
-global.nodeConfig = {ip: '172.31.26.178', port: 8080, onStart: setGroup};
-
 function cleanup(e) {
   if (!e) {
     console.log(e);
@@ -107,5 +102,12 @@ function cleanup(e) {
     });
   });
 }
+//////////////////////////////////////////////////////////////////
+/**
+ * EXECUTION SECTION
+ */
+
+global.nodeConfig = {ip: '172.31.26.178', port: 8080, onStart: setGroup};
+
 
 
