@@ -1,0 +1,92 @@
+const repl = require('repl');
+const groupsTemplate = require('./distribution/all/groups');
+const distribution = require('./distribution');
+const id = distribution.util.id;
+//////////////////////////////////////////////////////////////////
+
+/**
+ * CONFIG SECTION
+ */
+
+// nodes in the system = EC2 instances
+const n1 = {ip: '127.0.0.1', port: 8081};
+const n2 = {ip: '127.0.0.1', port: 8082}
+const n3 = {ip: '127.0.0.1', port: 8083};
+const workerGroup = {};
+workerGroup[id.getSID(n1)] = n1;
+workerGroup[id.getSID(n2)] = n2;
+workerGroup[id.getSID(n3)] = n3;
+const workerConfig = {gid: 'worker'};
+//////////////////////////////////////////////////////////////////
+
+// SERVER
+let localServer = null;
+global.nodeConfig = {ip: '127.0.0.1', port: 8080};
+distribution.node.start(onStart);
+
+function onStart(server) {
+  localServer = server;
+}
+
+function isEmptyObject(obj) {
+  return Object.keys(obj).length === 0 && obj.constructor === Object;
+}
+
+function eval(cmd) {
+  if (cmd === 'start') {
+    return 'lets go';
+  }
+  if (cmd === 'id') {
+    let id = 'async error';
+    distribution.local.status.get('nid',(e,v)=>{
+      id = v;
+    });
+    return id;
+  }
+  if (cmd === 'group') {
+  
+    groupsTemplate(workerConfig).put(workerConfig, workerGroup, (e, v) => {
+      console.log(JSON.stringify(e));
+      console.log(JSON.stringify(v));
+      
+    });
+    return cmd;
+  }
+  if (cmd === 'gid') {
+    distribution['worker'].status.get('nid', (e, v) => {
+      console.log(JSON.stringify(e));
+      console.log(JSON.stringify(v));
+    });
+  }
+  
+  return 'no command'
+}
+
+async function waitForCondition(interval = 100) {
+  while (localServer == null) {
+      await new Promise(resolve => setTimeout(resolve, interval));
+  }
+  console.log('REPL STARTED');
+}
+waitForCondition();
+
+// Start the REPL
+repl.start({
+    prompt: '> ',
+    eval: (cmd, context, filename, callback) => {
+        try {
+            // Remove the newline character at the end of the command
+            cmd = cmd.replace(/\n$/, '');
+            
+            // Evaluate the command and store the result
+            let result = eval(cmd);
+
+            // Send the result to the callback, with no error
+            callback(null, result);
+        } catch (e) {
+            // If an error occurs, send the error to the callback
+            callback(e);
+        }
+    }
+});
+

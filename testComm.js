@@ -1,27 +1,3 @@
-
-global.nodeConfig = {ip: '172.31.26.178', port: 8080};
-
-const distribution = require('./distribution');
-const path = require('path');
-const fs = require('fs');
-const {convert} = require('html-to-text')
-const id = distribution.util.id;
-distribution.node.start((server)=>{
-    const node = {ip: '172.31.25.251', port: 8080};
-    message = [
-    'nid', // configuration
-    ];
-    remote = {node: node, service: 'status', method: 'get'};
-    distribution.local.comm.send(message, remote, (e,v) => {
-        if (!e) {
-            console.log(v);
-        } else {
-            console.log(e);
-        }
-    })
-});
-
-
 /**
  * IMPORT SECTION
  */
@@ -37,14 +13,14 @@ const id = distribution.util.id;
  */
 
 // nodes in the system = EC2 instances
-const n1 = {ip: '127.0.0.1', port: 7110};
-const n2 = {ip: '127.0.0.1', port: 7111};
-const n3 = {ip: '127.0.0.1', port: 7112};
-
+const n1 = {ip: '172.31.19.210', port: 8080};
+const n2 = {ip: '172.31.24.240', port: 8080};
+const n3 = {ip: '172.31.25.251', port: 8080};
+const workerGroup = {};
 workerGroup[id.getSID(n1)] = n1;
 workerGroup[id.getSID(n2)] = n2;
 workerGroup[id.getSID(n3)] = n3;
-
+let localServer = null;
 const workerConfig = {gid: 'worker'};
 //////////////////////////////////////////////////////////////////
 
@@ -55,12 +31,16 @@ const workerConfig = {gid: 'worker'};
 function isEmptyObject(obj) {
   return Object.keys(obj).length === 0 && obj.constructor === Object;
 }
-const setGroup = () => {
+const setGroup = (server) => {
+  localServer = server;
   groupsTemplate(workerConfig).put(workerConfig, workerGroup, async (e, v) => {
-    if (!e || isEmptyObject(e)) {
+    if ( !isEmptyObject(e)) {
       cleanup(new Error('ERROR PUTTING THE GORUP'));
+      console.log("Error");
       return;
     } else {
+      console.log(JSON.stringify(e));
+      console.log(JSON.stringify(v));
       await workflow();
       cleanup();
       return;
@@ -68,13 +48,17 @@ const setGroup = () => {
   });
 }
 
+let cntr = 0;
+
 async function workflow() {
   const dataset = await distribution.util.crawl.fetchRepos(1, 100);
   return await new Promise((resolve, reject) => {
     dataset.forEach((o) => {
       let key = Object.keys(o)[0];
       let value = o[key];
-      distribution.groupA.store.put(value, key, (e, v) => {
+      console.log('KEY '+key);
+      console.log('VALUE '+value);
+      distribution.worker.store.put(value, key, (e, v) => {
         cntr++;
         if (cntr === dataset.length) {
           resolve(doMapReduce());
@@ -86,32 +70,28 @@ async function workflow() {
 
 const doMapReduce = async () => {
   return new Promise((resolve, reject) => {
-    distribution.groupA.store.get(null, async (e, v) => {
-      distribution.groupA.mr.exec({
+    distribution.worker.store.get(null, async (e, v) => {
+      distribution.worker.mr.exec({
         keys: v,
         map: async (key, value) =>
           await distribution.util.searchPreprocessing['map'](key, value),
-        reduce: async (key, value) =>
+	reduce: async (key, value) =>
           await distribution.util.searchPreprocessing['reduce'](key, value),
       }, (error, value) => {
         if (error) {
-          reject(error);
+          reject(cleanup(e));
           return;
+        } else {
+          console.log('FINAL');
         }
-        try {
-          expect(value.length>0).toEqual(true);
-          resolve();
-        } catch (error) {
-          reject(error);
-        }
+
       });
     });
   });
 };
+
 function cleanup(e) {
-  if (!e) {
     console.log(e);
-  }
   let remote = {service: 'status', method: 'stop'};
   remote.node = n1;
   distribution.local.comm.send([], remote, (e, v) => {
@@ -130,5 +110,6 @@ function cleanup(e) {
  * EXECUTION SECTION
  */
 
-global.nodeConfig = {ip: '172.31.26.178', port: 8080, onStart: setGroup};
+global.nodeConfig = {ip: '172.31.26.178', port: 8080};
 
+distribution.node.start(setGroup);

@@ -104,6 +104,21 @@ const start = function(onStart) {
         res.end(serialization.serialize([null, null]));
         return;
       }
+      if (service === 'query' && method === 'term') {
+        if (('worker' in global.distribution)) {
+          res.end(serialization.serialize('NO WORKER GROUP'));
+        } else {
+          global.distribution.store.get(args[0], (e,v) => {
+            if (e) {
+              res.end(serialization.serialize(e));
+            } else {
+              console.log('QUERY RESULT '+v);
+              res.end(serialization.serialize(v));
+            }
+          });
+        }
+        return;
+      } 
       local.routes.get(service, (error, service) => {
         if (error) {
           res.end(serialization.serialize(error));
