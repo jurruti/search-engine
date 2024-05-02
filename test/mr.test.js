@@ -106,38 +106,7 @@ test('searchPreprocessing workflow', async () => {
   const dataset = await distribution.util.crawl.fetchRepos(1, 10);
   console.log('Dataset: ', dataset);
 
-  const doMapReduce = async () => {
-    return new Promise((resolve, reject) => {
-      distribution.groupA.store.get(null, async (e, v) => {
-        try {
-          expect(v.length).toBe(dataset.length);
-        } catch (error) {
-          reject(error);
-          return;
-        }
-
-        distribution.groupA.mr.exec({
-          keys: v,
-          map: async (key, value) =>
-            await distribution.util.searchPreprocessing['map'](key, value),
-          reduce: async (key, value) =>
-            await distribution.util.searchPreprocessing['reduce'](key, value),
-        }, (error, value) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-          try {
-            expect(value.length>0).toEqual(true);
-            resolve();
-          } catch (error) {
-            reject(error);
-          }
-        });
-      });
-    });
-  };
-
+  
   let cntr = 0;
 
   await new Promise((resolve, reject) => {
