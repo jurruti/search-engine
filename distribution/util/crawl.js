@@ -13,9 +13,11 @@ const endDate = '2023-01-31';
 
 /**
  * Fetches repositories from GitHub within a specified date range and pages through results.
+ * This function utilizes the GitHub Search API to retrieve repositories created in a specified date range.
  *
- * @param {number} page - The page number for pagination.
- * @param {number} repoN - Number of repositories per page.
+ * @param {number} page - The page number for pagination. Specifies the current page of the search results.
+ * @param {number} repoN - Number of repositories per page. Determines the number of results per page.
+ * @returns {Promise<Object[]>} A promise that resolves to an array of repository names and owners.
  */
 async function fetchRepos(page, repoN) {
   const url = `https://api.github.com/search/repositories?q=created:${startDate}..${endDate}&sort=created&order=asc&per_page=${repoN}&page=${page}`;
@@ -37,6 +39,14 @@ async function fetchRepos(page, repoN) {
   }
 }
 
+/**
+ * Fetches detailed data about a specific GitHub repository.
+ * This function retrieves various metrics about the repository including the URL, fork count, open issues count, and others.
+ *
+ * @param {string} owner - The username of the repository's owner.
+ * @param {string} repo - The name of the repository.
+ * @returns {Promise<Object>} A promise that resolves to an object containing repository metrics.
+ */
 async function fetchRepoData(owner, repo) {
   const url = `https://api.github.com/repos/${owner}/${repo}`;
   try {

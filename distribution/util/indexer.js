@@ -1,7 +1,11 @@
-const {convert} = require('html-to-text');
 const { removeStopwords } = require('stopword');
 var natural = require('natural');
 
+/**
+ * Processes the input text by normalizing, removing stopwords, and stemming the remaining words.
+ * @param {string} textContent - The text content to process.
+ * @returns {string[]} An array of processed words, where each word has been stemmed and lowercased, excluding any stopwords.
+ */
 function process(textContent) {
   // split into words, convert nonletter sequence to spaces
   if (!textContent) {
@@ -17,7 +21,15 @@ function process(textContent) {
 }
 
 /**
- * Generates TF matrix from terms array
+ * Calculates the term frequency (TF) for each word and adds it along with other metadata to the TF matrix.
+ * @param {string[]} somegram - The array of words or n-grams.
+ * @param {Object} tfMatrix - The matrix object to which the term frequencies will be added.
+ * @param {string} url - The URL of the repository.
+ * @param {number} forksCount - The count of forks of the repository.
+ * @param {number} openIssuesCount - The count of open issues in the repository.
+ * @param {number} stargazersCount - The count of stargazers of the repository.
+ * @param {number} watchersCount - The count of watchers of the repository.
+ * @param {string} ownerLogin - The login of the repository owner.
  */
 function tf(somegram, tfMatrix, url, forksCount, openIssuesCount, stargazersCount, watchersCount, ownerLogin) {
   const gramCounts = somegram.reduce((counts, word) => {

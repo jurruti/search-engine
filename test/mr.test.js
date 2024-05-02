@@ -104,7 +104,7 @@ function sanityCheck(mapper, reducer, dataset, expected, done) {
 }
 test('searchPreprocessing workflow', async () => {
   // Act as the coordinator
-  const dataset = await distribution.util.crawl.fetchRepos(1, 10);
+  const dataset = await distribution.util.crawl.fetchRepos(1, 20);
 
   const doMapReduce = async () => {
     return new Promise((resolve, reject) => {
