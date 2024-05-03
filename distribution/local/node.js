@@ -33,10 +33,14 @@ const start = function(onStart) {
 
     // Write some code...
 
-    if (req.method !== 'PUT') {
-      res.end(serialization.serialize(new Error('Method not allowed!')));
+    if (req.method === 'GET') {
+      const parsedUrl = url.parse(req.url, true);
+      const query = parsedUrl.query.q;
+      res.setHeader('Content-Type', 'text/plain');
+      res.statusCode = 200;
+      res.end(`Received query parameter: ${query}`);
       return;
-    }
+    } 
 
     /*
       The path of the http request will determine the service to be used.

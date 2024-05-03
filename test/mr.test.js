@@ -83,26 +83,6 @@ afterAll((done) => {
   });
 });
 
-function sanityCheck(mapper, reducer, dataset, expected, done) {
-  let mapped = dataset.map((o) =>
-    mapper(Object.keys(o)[0], o[Object.keys(o)[0]]));
-  /* Flatten the array. */
-  mapped = mapped.flat();
-  let shuffled = mapped.reduce((a, b) => {
-    let key = Object.keys(b)[0];
-    if (a[key] === undefined) a[key] = [];
-    a[key].push(b[key]);
-    return a;
-  }, {});
-  let reduced = Object.keys(shuffled).map((k) => reducer(k, shuffled[k]));
-
-  try {
-    expect(reduced).toEqual(expect.arrayContaining(expected));
-  } catch (e) {
-    done(e);
-  }
-}
-
 test('large searchPreprocessing workflow', async () => {
   const totalRepos = 100;
 

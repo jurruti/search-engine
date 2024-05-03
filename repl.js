@@ -17,6 +17,8 @@ const workerGroup = {};
 workerGroup[id.getSID(n1)] = n1;
 workerGroup[id.getSID(n2)] = n2;
 workerGroup[id.getSID(n3)] = n3;
+workerGroup[id.getSID(n4)] = n4;
+
 const workerConfig = {gid: 'worker'};
 //////////////////////////////////////////////////////////////////
 
@@ -73,13 +75,24 @@ function eval(cmd) {
     });
     return cmd
   }
-  if (cmd.slice(0,5) === 'query') {
-    const args = [cmd[5]];
-    distribution.local.comm.send(args, remote, (e,v) => {
-      console.log(JSON.stringify(e));
-      console.log(JSON.stringify(v));
-    })
-    return cmd
+  if (cmd === 'github') {
+    const totalRepos = 100;
+
+    async function fetchAllRepos() {
+      let page = 1;
+      let dataset = [];
+      while (dataset.length < totalRepos) {
+        const newRepos = await distribution.util.crawl.fetchRepos(page, Math.min(100, totalRepos - dataset.length));
+        dataset = dataset.concat(newRepos);
+        if (newRepos.length === 0) {
+          break;
+        }
+        page++;
+      }
+      return dataset;
+    }
+
+    let dataset = await fetchAllRepos();
   }
   return 'no command'
 }
