@@ -16,10 +16,12 @@ const id = distribution.util.id;
 const n1 = {ip: '172.31.19.210', port: 8080};
 const n2 = {ip: '172.31.24.240', port: 8080};
 const n3 = {ip: '172.31.25.251', port: 8080};
+const n4 = {ip: '172.31.26.178', port: 8080};
 const workerGroup = {};
 workerGroup[id.getSID(n1)] = n1;
 workerGroup[id.getSID(n2)] = n2;
 workerGroup[id.getSID(n3)] = n3;
+workerGroup[id.getSID(n4)] = n4;
 let localServer = null;
 const workerConfig = {gid: 'worker'};
 //////////////////////////////////////////////////////////////////
