@@ -40,7 +40,7 @@ const start = function(onStart) {
       res.setHeader('Content-Type', 'text/plain');
 
 
-      global.distribution.store.get(args[0], (e,v) => {
+      global.distribution.worker.store.get(query, (e,v) => {
         if (e) {
           res.statusCode = 500;
           res.end(serialization.serialize(e));

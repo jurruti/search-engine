@@ -9,21 +9,20 @@ const id = distribution.util.id;
  */
 
 // nodes in the system = EC2 instances
-const n1 = {ip: '172.31.19.210', port: 8080};
-const n2 = {ip: '172.31.24.240', port: 8080}
-const n3 = {ip: '172.31.25.251', port: 8080};
-const n4 = {ip: '172.31.26.178', port: 8080}
+const n1 = {ip: '127.0.0.1', port: 8081};
+const n2 = {ip: '127.0.0.1', port: 8082}
+const n3 = {ip: '127.0.0.1', port: 8083};
 const workerGroup = {};
 workerGroup[id.getSID(n1)] = n1;
 workerGroup[id.getSID(n2)] = n2;
 workerGroup[id.getSID(n3)] = n3;
-workerGroup[id.getSID(n4)] = n4;
 const workerConfig = {gid: 'worker'};
 //////////////////////////////////////////////////////////////////
 
 // SERVER
+let dataset = null;
 let localServer = null;
-global.nodeConfig = {ip: '172.31.26.178', port: 8080};
+global.nodeConfig = {ip: '127.0.0.1', port: 8080};
 distribution.node.start(onStart);
 
 function onStart(server) {
@@ -76,7 +75,6 @@ function eval(cmd) {
   }
   if (cmd === 'github') {
     const totalRepos = 100;
-
     async function fetchAllRepos() {
       let page = 1;
       let dataset = [];
@@ -90,8 +88,9 @@ function eval(cmd) {
       }
       return dataset;
     }
+    dataset = await fetchAllRepos();
+    }
 
-    let dataset = await fetchAllRepos();
   }
   return 'no command'
 }

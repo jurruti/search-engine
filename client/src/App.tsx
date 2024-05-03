@@ -24,7 +24,7 @@ function App() {
   const search = async (e: React.KeyboardEvent<HTMLDivElement>) => {
     const key = e.key;
     if (key === 'Enter') {
-      const repos: Repo[] = await executeQuery(query, sortBy, true); // TODO: Remove second parameter for non-mock data
+      const repos: Repo[] = await executeQuery(query, sortBy, false); // TODO: Remove second parameter for non-mock data
       if (repos && repos.length > 0){
         setFoundRepos(repos);
       }
