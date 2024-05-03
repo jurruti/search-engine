@@ -65,7 +65,7 @@ module.exports = {
 
     try {
       await new Promise((resolve, reject) => {
-        global.distribution.all.store.put(topEntries, `query%%%${key}`, (e, v) => {
+        global.distribution.worker.store.put(topEntries, `query%%%${key}`, (e, v) => {
           console.log('Stored indexer output');
           if (e) {
             reject(e);
