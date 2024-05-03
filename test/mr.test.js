@@ -133,7 +133,7 @@ test('large searchPreprocessing workflow', async () => {
   await new Promise((resolve, reject) => {
     dataset.forEach((o) => {
       let key = Object.keys(o)[0];
-      let value = o[key];
+       
       distribution.groupA.store.put(value, key, (e, v) => {
         cntr++;
         if (cntr === dataset.length) {

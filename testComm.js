@@ -53,13 +53,25 @@ const setGroup = (server) => {
 let cntr = 0;
 
 async function workflow() {
-  const dataset = await distribution.util.crawl.fetchRepos(1, 100);
+  const totalRepos = 100;
+  async function fetchAllRepos() {
+    let page = 1;
+    let dataset = [];
+    while (dataset.length < totalRepos) {
+      const newRepos = await distribution.util.crawl.fetchRepos(page, Math.min(100, totalRepos - dataset.length));
+      dataset = dataset.concat(newRepos);
+      if (newRepos.length === 0) {
+        break;
+      }
+      page++;
+    }
+    return dataset;
+  }
+  let dataset = await fetchAllRepos();
   return await new Promise((resolve, reject) => {
     dataset.forEach((o) => {
       let key = Object.keys(o)[0];
       let value = o[key];
-      console.log('KEY '+key);
-      console.log('VALUE '+value);
       distribution.worker.store.put(value, key, (e, v) => {
         cntr++;
         if (cntr === dataset.length) {
@@ -73,20 +85,23 @@ async function workflow() {
 const doMapReduce = async () => {
   return new Promise((resolve, reject) => {
     distribution.worker.store.get(null, async (e, v) => {
+      console.log('key number: ', v.length);
       distribution.worker.mr.exec({
         keys: v,
         map: async (key, value) =>
           await distribution.util.searchPreprocessing['map'](key, value),
-	reduce: async (key, value) =>
+        reduce: async (key, value) =>
           await distribution.util.searchPreprocessing['reduce'](key, value),
       }, (error, value) => {
         if (error) {
-          reject(cleanup(e));
+          reject(error);
           return;
-        } else {
-          console.log('FINAL');
         }
-
+        try {
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
       });
     });
   });
