@@ -57,9 +57,11 @@ const mockRepos: Repo[] = [
 
 export async function executeQuery(input: string, sortBy: SortBy, mockData = false): Promise<Repo[]> {
   if (mockData) return mockRepos;
-  const API_ENDPOINT = `http://localhost:${PORT}/query?q=${input}&sortBy=${sortBy}`; // change later
+  const API_ENDPOINT = `https://127.0.0.1:8081?q=${input}`; // change later
 
   const response = await fetch(API_ENDPOINT);
+
+  console.error("reponse: ", response)
   const data: Repo[] = await response.json();
 
   return data;

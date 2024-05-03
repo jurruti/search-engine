@@ -31,7 +31,28 @@ const start = function(onStart) {
   const server = http.createServer((req, res) => {
     /* Your server will be listening for PUT requests. */
 
+    console.log('ehrkalkejsr;')
     // Write some code...
+    if (req.method === 'GET') {
+      console.log('helloi');
+      const parsedUrl = url.parse(req.url, true);
+      const query = parsedUrl.query.q;
+      res.setHeader('Content-Type', 'text/plain');
+
+
+      global.distribution.store.get(args[0], (e,v) => {
+        if (e) {
+          res.statusCode = 500;
+          res.end(serialization.serialize(e));
+        } else {
+          console.log('QUERY RESULT '+v);
+          res.statusCode = 200;
+          res.end(serialization.serialize(v));
+        }
+      });
+
+      return;
+    }
 
     if (req.method === 'GET') {
       const parsedUrl = url.parse(req.url, true);
